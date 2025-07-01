@@ -1,0 +1,14 @@
+# docker-compose testing
+
+services:
+  isaac-last-stand:
+    build:
+      context: .
+      target: build
+    container_name: isaac-last-stand
+    ports:
+      - '5173:5173'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev -- --host

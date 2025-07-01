@@ -1,0 +1,31 @@
+name: Basic build & linter check
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+
+jobs:
+    validate:
+        name: Validate Lint & Build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Clonar Repositorio
+              uses: actions/checkout@v4
+
+            - name: Configurar Node.js con Caché de Dependencias
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: "npm"
+
+            - name: Instalar Dependencias
+              run: npm ci
+
+            - name: Ejecutar Linter
+              run: npm run lint
+
+            - name: Construir Aplicación
+              run: npm run build
