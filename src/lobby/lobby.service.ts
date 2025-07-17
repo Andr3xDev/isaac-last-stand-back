@@ -1,5 +1,3 @@
-// src/lobby/lobby.service.ts
-
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisClientType } from 'redis';
 import { REDIS_CLIENT } from '../redis/redis.module';
@@ -102,5 +100,16 @@ export class LobbyService {
             return lobby;
         }
         return null;
+    }
+
+    async getLobbies(): Promise<any[]> {
+        const lobbyKeys = await this.redis.keys('lobby:*');
+        if (!lobbyKeys || lobbyKeys.length === 0) {
+            return [];
+        }
+        const lobbyDataStrings = await this.redis.mGet(lobbyKeys);
+        return lobbyDataStrings
+            .filter((str) => str !== null)
+            .map((str) => JSON.parse(str));
     }
 }

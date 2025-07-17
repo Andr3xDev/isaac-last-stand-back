@@ -23,7 +23,7 @@ export class LobbyGateway implements OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
-    private socketToLobby = new Map<string, string>();
+    private readonly socketToLobby = new Map<string, string>();
 
     constructor(private readonly lobbyService: LobbyService) {}
 
@@ -49,7 +49,7 @@ export class LobbyGateway implements OnGatewayDisconnect {
         @MessageBody() payload: CreateLobbyDto,
         @ConnectedSocket() client: Socket,
     ) {
-        console.log(`[Gateway] Recibido 'createLobby' de ${payload.name}`);
+        console.log(`[Gateway] Recive 'createLobby' de ${payload.name}`);
         const host: Player = {
             id: client.id,
             name: payload.name,
@@ -68,9 +68,7 @@ export class LobbyGateway implements OnGatewayDisconnect {
         @MessageBody() payload: { lobbyId: string; name?: string },
         @ConnectedSocket() client: Socket,
     ) {
-        console.log(
-            `[Gateway] Recibido 'joinLobby' para sala ${payload.lobbyId}`,
-        );
+        console.log(`[Gateway] Recive 'joinLobby' to lobby ${payload.lobbyId}`);
 
         const playerName =
             payload.name || `Player_${client.id.substring(0, 10)}`;
@@ -147,6 +145,20 @@ export class LobbyGateway implements OnGatewayDisconnect {
         } else {
             client.emit('error', {
                 message: 'Solo el host puede iniciar la partida.',
+            });
+        }
+    }
+
+    @SubscribeMessage('getLobbies')
+    async handleGetLobbies(@ConnectedSocket() client: Socket) {
+        console.log(`[Gateway] Recive 'getLobbies' de ${client.id}`);
+        try {
+            const publicLobbies = await this.lobbyService.getLobbies();
+            client.emit('lobbiesList', publicLobbies);
+        } catch (error) {
+            console.error('[Gateway] Error getting lobbies:', error);
+            client.emit('error', {
+                message: 'Cant get any lobbies.',
             });
         }
     }
